@@ -42,6 +42,8 @@ const treasuryKey = PrivateKey.fromString(process.env.TREASURY_KEY);
 // const client = Client.forMainnet().setOperator(operatorId, operatorKey);
 const client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
+const collectorId = AccountId.fromString(process.env.COLLECTOR_ID)
+
 const supplyKey = PrivateKey.fromString(process.env.OPERATOR_PVKEY);
 const adminKey = PrivateKey.fromString(process.env.OPERATOR_PVKEY);
 // const kycKey = PrivateKey.generate();
@@ -72,7 +74,7 @@ async function main() {
     let nftCustomFee = await new CustomRoyaltyFee()
         .setNumerator(15)
         .setDenominator(100)
-        .setFeeCollectorAccountId(treasuryId)
+        .setFeeCollectorAccountId(collectorId)
         .setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(54)));
 
     // CREATE NFT WITH CUSTOM FEE

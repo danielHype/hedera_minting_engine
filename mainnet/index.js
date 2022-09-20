@@ -31,6 +31,10 @@ const treasuryKey = PrivateKey.fromString(process.env.TREASURY_KEY);
 const feeCollectorId = AccountId.fromString(process.env.COLLECTOR_ID);
 const client = Client.forMainnet().setOperator(operatorId, operatorKey);
 
+
+const collectorId = AccountId.fromString(process.env.COLLECTOR_ID)
+
+
 const supplyKey = PrivateKey.fromString(process.env.OPERATOR_PVKEY);
 const adminKey = PrivateKey.fromString(process.env.OPERATOR_PVKEY);
 // const kycKey = PrivateKey.generate();

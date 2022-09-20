@@ -1,6 +1,7 @@
 console.clear();
 require("dotenv").config();
 
+
 const {
     AccountId,
     PrivateKey,
@@ -19,6 +20,10 @@ const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
 // const operatorKey = PrivateKey.fromStringED25519(process.env.OPERATOR_PVKEY);
 const operatorKey = PrivateKey.fromString(process.env.OPERATOR_PVKEY);
 // const client = Client.forMainnet().setOperator(operatorId, operatorKey);
+
+const collectorId = AccountId.fromString(process.env.COLLECTOR_ID)
+
+
 const client = Client.forMainnet().setOperator(operatorId, operatorKey);
 
 const supplyKey = PrivateKey.fromString(process.env.OPERATOR_PVKEY);
@@ -60,14 +65,23 @@ async function main() {
     // var tokenInfo = await tQueryFcn();
     var tokenInfo = await new TokenInfoQuery().setTokenId(tokenId).execute(client)
 
+    console.log("tokenInfo      ",tokenInfo)
+    console.log("tokenInfo      ",tokenInfo.totalSupply)
+    console.log("tokenInfo      ",tokenInfo.totalSupply.low)
+
+    const startingPointToPickUpFrom = tokenInfo.totalSupply.low + 1;
+
     console.table(tokenInfo.customFees[0]);
 
     // MINT NEW BATCH OF NFTS
 
-    cidArray = [];
-    for (var i = 3; i < CID.length; i++) {
-        cidArray[i] = await tokenMinterFcn(CID[i]);
-        console.log(`Created NFT ${tokenId} with serial: ${cidArray[i].serials[0].low}`);
+    nftGPPG = [];
+  for (var i = startingPointToPickUpFrom; i < CID.length; i++) {
+  //  for (var i = startingPointToPickUpFrom-1; i < startingPointToPickUpFrom+10; i++) {
+       nftGPPG[i] = await tokenMinterFcn(CID[i-1]);
+
+        console.log("(CID[i]        ",(CID[i-1]))
+   console.log(`Created NFT ${tokenId} with serial: ${nftGPPG[i].serials[0].low}`);
     }
 
 
@@ -91,6 +105,11 @@ async function main() {
         balanceCheckTx = await new AccountBalanceQuery().setAccountId(id).execute(client);
         return [balanceCheckTx.tokens._map.get(tokenId.toString()), balanceCheckTx.hbars];
     }
+
+}
+
+
+async function getCurrentSerialNumber() {
 
 }
 
