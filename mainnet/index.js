@@ -2,31 +2,18 @@ console.clear();
 require("dotenv").config();
 
 const {
-    AccountId,
-    PrivateKey,
-    Client,
-    TokenCreateTransaction,
-    TokenInfoQuery,
-    TokenType,
-    CustomRoyaltyFee,
-    CustomFixedFee,
-    Hbar,
-    TokenSupplyType,
-    TokenMintTransaction,
-    TokenBurnTransaction,
-    TransferTransaction,
-    AccountBalanceQuery,
-    TokenAssociateTransaction,
-    TokenUpdateTransaction,
-    TokenGrantKycTransaction,
-    TokenRevokeKycTransaction,
-    ScheduleCreateTransaction,
-    ScheduleSignTransaction,
-    ScheduleInfoQuery,
-    TokenInfo,
-    TokenNftInfo,
-    AccountUpdateTransaction,
-    Transfer,
+  AccountId,
+  PrivateKey,
+  Client,
+  TokenCreateTransaction,
+  TokenInfoQuery,
+  TokenType,
+  CustomRoyaltyFee,
+  CustomFixedFee,
+  Hbar,
+  TokenSupplyType,
+  TokenMintTransaction,
+  AccountBalanceQuery,
 } = require("@hashgraph/sdk");
 
 // console.log(process.env.OPERATOR_ID)
@@ -40,6 +27,8 @@ const operatorKey = PrivateKey.fromString(process.env.OPERATOR_PVKEY);
 const treasuryId = AccountId.fromString(process.env.TREASURY_ID);
 const treasuryKey = PrivateKey.fromString(process.env.TREASURY_KEY);
 // const client = Client.forMainnet().setOperator(operatorId, operatorKey);
+
+const feeCollectorId = AccountId.fromString(process.env.COLLECTOR_ID);
 const client = Client.forMainnet().setOperator(operatorId, operatorKey);
 
 const supplyKey = PrivateKey.fromString(process.env.OPERATOR_PVKEY);
@@ -54,112 +43,110 @@ const adminKey = PrivateKey.fromString(process.env.OPERATOR_PVKEY);
 
 // Insert content from collectio_array (after updating)
 
-const CID = require("../supporting/collection_array")
+const CID = require("../supporting/collection_array");
 
-
-console.log(CID)
-
+console.log(CID);
 
 async function main() {
+  // If we weren't able to grab it, we should throw a new error
+  if (operatorId == null || operatorKey == null) {
+    throw new Error(
+      "Environment variables operatorId and operatorKey must be present"
+    );
+  }
 
-    // If we weren't able to grab it, we should throw a new error
-    if (operatorId == null ||
-        operatorKey == null) {
-        throw new Error("Environment variables operatorId and operatorKey must be present");
-    }
+  // DEFINE CUSTOM FEE SCHEDULE
 
-    if (operatorId == "0.0.635713") {console.log(`MAINNET ID ${operatorId}`)}
-    else if (operatorId == "0.0.26305938") {console.log(`WALLET HASHPACK TESTNET ${operatorId}`)}
-    else if (operatorId == "0.0.642410") {console.log(`WALLET HASHPACK NEW MAINNET TREASURY ${operatorId}`)}
-    else  {console.log(`ANOTHER ID RUNNING ${operatorId}`)}
+  let nftCustomFee = await new CustomRoyaltyFee()
+    .setNumerator(15)
+    .setDenominator(100)
+    .setFeeCollectorAccountId(feeCollectorId)
+    .setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(54)));
 
+  // CREATE NFT WITH CUSTOM FEE
 
-    // DEFINE CUSTOM FEE SCHEDULE
+  let nftCreate = await new TokenCreateTransaction()
+    .setTokenName("Pride Pandas")
+    .setTokenSymbol("PP")
+    .setTokenType(TokenType.NonFungibleUnique)
+    .setDecimals(0)
+    .setInitialSupply(0)
+    .setTreasuryAccountId(treasuryId)
+    .setSupplyType(TokenSupplyType.Finite)
+    .setMaxSupply(CID.length)
+    .setCustomFees([nftCustomFee])
+    .setAdminKey(adminKey)
+    .setSupplyKey(supplyKey)
+    // .setKycKey(kycKey)
+    // .setPauseKey(pauseKey)
+    // .setFreezeKey(freezeKey)
+    // .setWipeKey(wipekey)
+    .freezeWith(client)
+    .sign(treasuryKey);
 
-    let nftCustomFee = await new CustomRoyaltyFee()
-        .setNumerator(5)
-        .setDenominator(100)
-        .setFeeCollectorAccountId(treasuryId)
-        .setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(29)));
+  //Sign the transaction with the treasury key
 
-    // CREATE NFT WITH CUSTOM FEE
+  let nftCreateSign = await nftCreate.sign(adminKey);
 
-    let nftCreate = await new TokenCreateTransaction()
-        .setTokenName("HashGuild Launch POAP")
-        .setTokenSymbol("HG")
-        .setTokenType(TokenType.NonFungibleUnique)
-        .setDecimals(0)
-        .setInitialSupply(0)
-        .setTreasuryAccountId(treasuryId)
-        .setSupplyType(TokenSupplyType.Finite)
-        .setMaxSupply(CID.length)
-        .setCustomFees([nftCustomFee])
-        .setAdminKey(adminKey)
-        .setSupplyKey(supplyKey)
-        // .setKycKey(kycKey)
-        // .setPauseKey(pauseKey)
-        // .setFreezeKey(freezeKey)
-        // .setWipeKey(wipekey)
-        .freezeWith(client)
-        .sign(treasuryKey)
+  //Submit the transaction to a Hedera network
 
-    //Sign the transaction with the treasury key
+  let nftCreateSubmit = await nftCreateSign.execute(client);
 
-    let nftCreateSign = await nftCreate.sign(adminKey);
+  //Get the transaction receipt
 
-    //Submit the transaction to a Hedera network
+  let nftCreateRx = await nftCreateSubmit.getReceipt(client);
 
-    let nftCreateSubmit = await nftCreateSign.execute(client);
+  //Get the token ID
 
-    //Get the transaction receipt
+  let tokenId = nftCreateRx.tokenId;
 
-    let nftCreateRx = await nftCreateSubmit.getReceipt(client);
+  //Log the token ID
 
-    //Get the token ID
+  console.log(`Created NFT with Token Id: ${tokenId} \n`);
 
-    let tokenId = nftCreateRx.tokenId;
+  // TOKEN QUERY TO CHECK THAT THE CUSTOM FEE SCHEDULE IS ASSOCIATED WITH NFT
 
-    //Log the token ID
+  // var tokenInfo = await tQueryFcn();
+  var tokenInfo = await new TokenInfoQuery()
+    .setTokenId(tokenId)
+    .execute(client);
 
-    console.log(`Created NFT with Token Id: ${tokenId} \n`)
+  console.table(tokenInfo.customFees[0]);
 
-    // TOKEN QUERY TO CHECK THAT THE CUSTOM FEE SCHEDULE IS ASSOCIATED WITH NFT
+  // MINT NEW BATCH OF NFTS
 
-    // var tokenInfo = await tQueryFcn();
-    var tokenInfo = await new TokenInfoQuery().setTokenId(tokenId).execute(client)
+  cidArray = [];
+  for (var i = 0; i < CID.length; i++) {
+    cidArray[i] = await tokenMinterFcn(CID[i]);
+    console.log(
+      `Created NFT ${tokenId} with serial: ${cidArray[i].serials[0].low}`
+    );
+  }
 
-    console.table(tokenInfo.customFees[0]);
+  // TOKEN MINTER FUNCTION ===============
+  async function tokenMinterFcn(CID) {
+    mintTx = await new TokenMintTransaction()
+      .setTokenId(tokenId)
+      .setMetadata([Buffer.from(CID)])
+      .freezeWith(client);
 
-    // MINT NEW BATCH OF NFTS
+    let mintTxSign = await mintTx.sign(supplyKey);
+    let mintTxSubmit = await mintTxSign.execute(client);
+    let mintRx = await mintTxSubmit.getReceipt(client);
+    return mintRx;
+  }
 
-    nftGPPG = [];
-    for (var i = 0; i < CID.length; i++) {
-        nftGPPG[i] = await tokenMinterFcn(CID[i]);
-        console.log(`Created NFT ${tokenId} with serial: ${nftGPPG[i].serials[0].low}`);
-    }
+  // BALANCE CHECKER FUNCTION ==========
 
-
-    // TOKEN MINTER FUNCTION ===============
-    async function tokenMinterFcn(CID){
-        mintTx = await new TokenMintTransaction()
-            .setTokenId(tokenId)
-            .setMetadata([Buffer.from(CID)])
-            .freezeWith(client);
-
-        let mintTxSign = await mintTx.sign(supplyKey);
-        let mintTxSubmit = await mintTxSign.execute(client);
-        let mintRx = await mintTxSubmit.getReceipt(client);
-        return mintRx;
-
-    }
-
-    // BALANCE CHECKER FUNCTION ==========
-
-    async function bCheckerFcn(id){
-        balanceCheckTx = await new AccountBalanceQuery().setAccountId(id).execute(client);
-        return [balanceCheckTx.tokens._map.get(tokenId.toString()), balanceCheckTx.hbars];
-    }
-
+  async function bCheckerFcn(id) {
+    balanceCheckTx = await new AccountBalanceQuery()
+      .setAccountId(id)
+      .execute(client);
+    return [
+      balanceCheckTx.tokens._map.get(tokenId.toString()),
+      balanceCheckTx.hbars,
+    ];
+  }
 }
 
 main();

@@ -17,8 +17,8 @@ const pathName = writeStream.path;
 
 // Instructions/ Setup
 
-const CID_baseURI = "bafybeig5yh6tbcnfsiy7dwj4ldyyqiul6tjvrtghm7boxzn6awm2me7dci" // e.g. first part of "Qmc2eUqWJi1fCHpGZ3ApmZgB77cCJU7jLBtztC3fW12gF1/1.json"
-const collectionSize = 199; 
+const CID_baseURI = "Add CID base Uri here" // e.g. first part of "Qmc2eUqWJi1fCHpGZ3ApmZgB77cCJU7jLBtztC3fW12gF1/1.json"
+const collectionSize = 250; 
 
 // Workflow
 

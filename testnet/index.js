@@ -70,16 +70,16 @@ async function main() {
     // DEFINE CUSTOM FEE SCHEDULE
 
     let nftCustomFee = await new CustomRoyaltyFee()
-        .setNumerator(5)
+        .setNumerator(15)
         .setDenominator(100)
         .setFeeCollectorAccountId(treasuryId)
-        .setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(29)));
+        .setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(54)));
 
     // CREATE NFT WITH CUSTOM FEE
 
     let nftCreate = await new TokenCreateTransaction()
-        .setTokenName("GPPG Collection")
-        .setTokenSymbol("GPPG")
+        .setTokenName("Pride Pandas")
+        .setTokenSymbol("PP")
         .setTokenType(TokenType.NonFungibleUnique)
         .setDecimals(0)
         .setInitialSupply(0)
@@ -125,10 +125,10 @@ async function main() {
 
     // MINT NEW BATCH OF NFTS
 
-    nftGPPG = [];
+    cidArray = [];
     for (var i = 0; i < CID.length; i++) {
-        nftGPPG[i] = await tokenMinterFcn(CID[i]);
-        console.log(`Created NFT ${tokenId} with serial: ${nftGPPG[i].serials[0].low}`);
+        cidArray[i] = await tokenMinterFcn(CID[i]);
+        console.log(`Created NFT ${tokenId} with serial: ${cidArray[i].serials[0].low}`);
     }
 
 

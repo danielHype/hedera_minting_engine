@@ -5,28 +5,9 @@ const {
     AccountId,
     PrivateKey,
     Client,
-    TokenCreateTransaction,
     TokenInfoQuery,
-    TokenType,
-    CustomRoyaltyFee,
-    CustomFixedFee,
-    Hbar,
-    TokenSupplyType,
     TokenMintTransaction,
-    TokenBurnTransaction,
-    TransferTransaction,
     AccountBalanceQuery,
-    TokenAssociateTransaction,
-    TokenUpdateTransaction,
-    TokenGrantKycTransaction,
-    TokenRevokeKycTransaction,
-    ScheduleCreateTransaction,
-    ScheduleSignTransaction,
-    ScheduleInfoQuery,
-    TokenInfo,
-    TokenNftInfo,
-    AccountUpdateTransaction,
-    Transfer,
 } = require("@hashgraph/sdk");
 
 // console.log(process.env.OPERATOR_ID)
@@ -37,8 +18,6 @@ const {
 const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
 // const operatorKey = PrivateKey.fromStringED25519(process.env.OPERATOR_PVKEY);
 const operatorKey = PrivateKey.fromString(process.env.OPERATOR_PVKEY);
-const treasuryId = AccountId.fromString(process.env.TREASURY_ID);
-const treasuryKey = PrivateKey.fromString(process.env.TREASURY_KEY);
 // const client = Client.forMainnet().setOperator(operatorId, operatorKey);
 const client = Client.forMainnet().setOperator(operatorId, operatorKey);
 
@@ -68,14 +47,9 @@ async function main() {
         throw new Error("Environment variables operatorId and operatorKey must be present");
     }
 
-    if (operatorId == "0.0.635713") {console.log(`MAINNET ID ${operatorId}`)}
-    else if (operatorId == "0.0.26305938") {console.log(`WALLET HASHPACK TESTNET ${operatorId}`)}
-    else  {console.log(`ANOTHER ID RUNNING ${operatorId}`)}
-
-
     //Get the token ID
 
-    let tokenId = "0.0.642423";
+    let tokenId = "Add Token ID here";
 
     //Log the token ID
 
@@ -90,10 +64,10 @@ async function main() {
 
     // MINT NEW BATCH OF NFTS
 
-    nftGPPG = [];
+    cidArray = [];
     for (var i = 3; i < CID.length; i++) {
-        nftGPPG[i] = await tokenMinterFcn(CID[i]);
-        console.log(`Created NFT ${tokenId} with serial: ${nftGPPG[i].serials[0].low}`);
+        cidArray[i] = await tokenMinterFcn(CID[i]);
+        console.log(`Created NFT ${tokenId} with serial: ${cidArray[i].serials[0].low}`);
     }
 
 
