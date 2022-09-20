@@ -1,3 +1,5 @@
-# hedera_minting_engine
+# Hedera_Minting_Engine
 
-Not sanitized/ organized due to time constraints & please do not share
+Repository featuring collection creation for CIDs, testnet and mainnet support, restarting a mint and burning tokens. 
+
+Questions? Discord: datproto | GPPG 🐼#2765
