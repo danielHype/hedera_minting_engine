@@ -12,6 +12,6 @@
     "@hashgraph/sdk": "2.6.0",
     "cids": "^1.1.9",
     "dotenv": "^8.2.0",
-    "node-fetch": "^3.2.10"
+    "node-fetch": "^2.6.1"
   }
 }
